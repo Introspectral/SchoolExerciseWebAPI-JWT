@@ -1,0 +1,190 @@
+﻿@page "/bokafordon/add"
+
+@using Microsoft.AspNetCore.Components.Forms
+@using Biluthyrning.Interface
+@using Biluthyrning.Data
+@using Biluthyrning.Repositorys;
+@using Microsoft.EntityFrameworkCore
+@using System.ComponentModel.DataAnnotations
+
+@*@inject IDbContextFactory<RentalDbContext> ContextFactory*@
+@inject IBookingRepository bookingsRepo
+@inject IVehicleRepository vehicleRepo
+@inject IUserRepository userRepo
+@inject IVehicleTypeRepository vehicleTypeRepo
+@inject UserVehicleViewModel ViewModel
+@inject IJSRuntime jsRuntime
+@inject NavigationManager Navigation
+
+@*Model=@ViewModel.User för att eposten ska trigga ordentligt om det är fel. Även fast jag använder @ViewModel så verkar den inte köra vettig validation på alla fält?!*@
+<EditForm class="form-control text-white" Model="@ViewModel.User" OnValidSubmit="AddBooking">
+	<p>När vill du boka ett fordon?</p>
+	<DataAnnotationsValidator />
+	<br />
+	<InputDate @bind-Value="ViewModel.Booking.StartDate"></InputDate>
+	<ValidationMessage For="@(() => ViewModel.Booking.StartDate)" />
+	
+	<InputDate @bind-Value="ViewModel.Booking.EndDate"></InputDate>
+	<ValidationMessage For="@(() => ViewModel.Booking.EndDate)" />
+	<a class="btn btn-success" role="button" @onclick="Search">SÖK</a>
+
+	<br />
+	@if (!hide)
+	{
+		<div class="form-floating mb-3 row">
+
+			<div class="col-md-2">
+				<label for="vehicleTypeId">Fordonstyp</label>
+			</div>
+			<div class="col-md-10">
+				<InputSelect id="vehicleTypeId" @bind-Value="ViewModel.Vehicle.VehicleTypeId" placeholder="Välj fordon">
+					<option selected value="">Välj fordonstyp...</option>
+					@foreach (var vt in vehicleTypes)
+					{
+						<option value="@vt.VehicleTypeId">@vt.vehicleType</option>
+					}
+				</InputSelect>
+				<ValidationMessage For="@(() => ViewModel.Vehicle.VehicleTypeId)" />
+			</div>
+		</div>
+
+
+		<div class="form-floating mb-3 row">
+			<div class="col-md-2">
+				<label for="vehicleId">Fordon</label>
+			</div>
+			<div class="col-md-10">
+				<InputSelect id="vehicleId" @bind-Value="ViewModel.Vehicle.VehicleId" placeholder="Ange Fordon">
+					<option selected value="">Välj fordon...</option>
+					@foreach (var cnt in availableCars.Where(v => v.VehicleTypeId == ViewModel.Vehicle.VehicleTypeId))
+					{
+						<option value="@cnt.VehicleId">@cnt.Brand @cnt.Model</option>
+					}
+				</InputSelect>
+				<ValidationMessage For="@(() => ViewModel.Vehicle.VehicleId)" />
+			</div>
+		</div>
+
+
+		<div class="form-floating mb-3 row">
+			<div class="col-md-2">
+				<label for="floatingEmail">E-post</label>
+			</div>
+			<div class="col-md-10">
+				<InputText id="floatingEmail" @bind-Value="ViewModel.User.Email" placeholder="Ange Epostadress">
+				</InputText>
+				<ValidationMessage For="@(() => ViewModel.User.Email)" />
+			</div>
+		</div>
+		<button type="submit" class="btn btn-primary"><span class="oi oi-cart " style="padding-right:10px"></span>Bekräfta bokning</button>
+		<span style="float:right;font-size:large "><h3>Pris: @price kronor</h3></span>
+		
+
+	}
+</EditForm>
+
+
+@code {
+	List<Booking> bookings = new List<Booking>();
+	Booking bokning = new Booking();
+	List<Vehicle> vehicles = new List<Vehicle>();
+	Vehicle fordon = new Vehicle();
+	List<VehicleType> vehicleTypes = new List<VehicleType>();
+	VehicleType vehicleType = new VehicleType();
+	List<User> users = new List<User>();
+	User user = new User();
+	EditForm editForm;
+
+	List<Vehicle> availableCars = new List<Vehicle>();
+
+	int price;
+	bool hide = true;
+
+	protected override async Task OnInitializedAsync()
+	{
+		bookings = bookingsRepo.GetAllBookings();
+		vehicles = vehicleRepo.GetAll();
+		vehicleTypes = vehicleTypeRepo.GetAll();
+		users = await userRepo.GetAllUsers();
+
+	}
+
+	private async Task AddBooking()
+	{
+
+		ViewModel.Booking.VehicleId = ViewModel.Vehicle.VehicleId;
+		ViewModel.Booking.UserId = ViewModel.User.UserId;
+
+		User emailuser = new User();
+		emailuser = users.FirstOrDefault(u => u.Email == ViewModel.User.Email);
+
+		//Har användaren inget Id så är det en ny användare
+		if (ViewModel.User.UserId == 0)
+		{
+			//Finns epost-adressen redan bland användarna? Använd i så fall den användarens UserId
+			if (emailuser != null)
+			{
+				ViewModel.Booking.UserId = emailuser.UserId;
+				await bookingsRepo.CreateBooking(ViewModel.Booking);
+			}
+			else
+			{
+				int newUser;
+				newUser = await userRepo.CreateUser(ViewModel.User);
+				ViewModel.Booking.UserId = newUser;
+				await bookingsRepo.CreateBooking(ViewModel.Booking);
+
+			}
+
+			Confirm();
+		}
+		else
+		{
+			bokning.UserId = ViewModel.User.UserId;
+			await bookingsRepo.CreateBooking(ViewModel.Booking);
+
+			Confirm();
+		}
+
+	}
+
+	private void Search()
+	{
+
+		List<int> bookedVehicles = bookings
+		.Where(b => (ViewModel.Booking.StartDate >= b.StartDate && ViewModel.Booking.StartDate <= b.EndDate) || (ViewModel.Booking.EndDate >= b.StartDate && ViewModel.Booking.EndDate <= b.EndDate))
+		.Select(b => b.VehicleId)
+		.ToList();
+
+		availableCars = vehicles
+		.Where(v => !bookedVehicles.Contains(v.VehicleId))
+		.ToList();
+
+		TimeSpan timeSpan = new TimeSpan();
+		timeSpan = ViewModel.Booking.EndDate - ViewModel.Booking.StartDate;
+		if (timeSpan.Days > 0)
+		{
+			price = ViewModel.Booking.PricePerDay * timeSpan.Days;
+		}
+		else
+			price = ViewModel.Booking.PricePerDay;
+		hide = false;
+	}
+
+	private void Confirm()
+	{
+		jsRuntime.InvokeAsync<bool>("alert", $"Din bokning är utförd och bokningsbekräftelsen är skickad till {ViewModel.User.Email}!");
+		
+		ViewModel.Booking.StartDate = DateTime.Today;
+		ViewModel.Booking.EndDate = DateTime.Today;
+		ViewModel.Booking.UserId = default;
+		ViewModel.Booking.VehicleId = default;
+		ViewModel.Booking.BookingId = default;
+		ViewModel.User.UserId = default;
+		ViewModel.User.Email = default;
+		ViewModel.Vehicle.VehicleTypeId = default;
+		ViewModel.Vehicle.VehicleId = default;
+		
+		Navigation.NavigateTo("/");
+	}
+}

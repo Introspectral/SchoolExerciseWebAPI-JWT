@@ -1,0 +1,66 @@
+﻿@page "/vehicles"
+@using Biluthyrning.Interface
+@inject IVehicleRepository vehicleRepo
+@inject IVehicleTypeRepository vehicleTypeRepo
+@inject IJSRuntime jsRuntime
+
+	<div class="form-control-light">	
+	<h3>Våra tillgängliga fordon:</h3>
+	</div>
+<table class="table table-striped table-light">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Märke</th>
+				<th>Modell</th>
+				<th>Fordonstyp</th>
+				<th>Färg</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>		
+			@foreach (var item in VehicleList)
+			{
+			<tr class="table-row-color">
+				<td>@item.VehicleId</td>
+				<td>@item.Brand</td>
+				<td>@item.Model</td>
+				<td>@(vehicleTypes.FirstOrDefault(v => v.VehicleTypeId == item.VehicleTypeId)?.vehicleType ?? "-")</td>
+				<td>@item.Color</td>
+				<td>
+					<a class="btn btn-success" role="button" href="/vehicle/edit/@item.VehicleId">Redigera</a>
+					<a class="btn btn-danger" role="button" @onclick="async ()=> await Delete(item)">Ta bort</a>
+				</td>
+			</tr>
+			}
+		</tbody>
+	</table>
+
+@code {
+
+	[Parameter]
+	public int VehicleId { get; set; }
+
+	List<Vehicle> VehicleList = new List<Vehicle>();
+	List<VehicleType> vehicleTypes = new List<VehicleType>();
+    
+	protected override void OnInitialized()
+	{
+		VehicleList = vehicleRepo.GetAll();
+		base.OnInitialized();
+		vehicleTypes = vehicleTypeRepo.GetAll();
+	}
+
+	private async Task Delete(Vehicle vehicle)
+	{
+		bool confirmed = await jsRuntime.InvokeAsync<bool>("confirm", $"Vill du verkligen ta bort fordonet {vehicle.Brand}?");
+
+		if (confirmed)
+		{
+			await vehicleRepo.DeleteVehicle(vehicle);
+			VehicleList.Remove(vehicle);
+		}
+	}
+	
+}
+

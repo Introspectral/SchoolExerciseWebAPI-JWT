@@ -1,0 +1,73 @@
+﻿@page "/admin/bookinglist"
+
+@using Biluthyrning.Interface
+@using Biluthyrning.Data
+@inject IUserRepository userRepo
+@inject IVehicleRepository vehicleRepo
+@inject IBookingRepository bookingRepo
+@inject NavigationManager Navigation
+@inject IJSRuntime jsRuntime
+
+<div class="form-control-light">
+<h3>Aktuella bokningar</h3>
+</div>
+<table class="table table-striped table-light">
+	<thead>
+		<tr>
+			<th>Bokningsnummer</th>
+			<th>Bil</th>
+			<th>Startdatum</th>
+			<th>Slutdatum</th>
+			<th>Bokad av</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var item in bookingList)
+		{
+				<tr>
+					<td style="width: 15%;">@item.BookingId</td>
+					<td style="width: 15%;">@item.VehicleId</td>
+					<td style="width: 15%;">@item.StartDate</td>
+				    <td style="width: 15%;">@item.EndDate</td>
+					<td style="width: 15%;">@item.UserId</td>
+					<td>
+					<a class="btn btn-success" role="button" href="/bokning/edit/@item.BookingId">Redigera</a>
+						<a class="btn btn-danger" role="button" @onclick="async ()=> await DeleteBooking(item)">Ta bort</a>
+					</td>
+				</tr>
+		}
+	</tbody>
+</table>
+
+@code {
+	[Parameter]
+	public int BookingId { get; set; }
+	List<Vehicle> VehicleList = new List<Vehicle>();
+	List<VehicleType> vehicleTypes = new List<VehicleType>();
+	List<User> Users = new List<User>();
+	List<Booking> bookingList = new List<Booking>();
+
+	protected override void OnInitialized()
+	{
+		bookingList = bookingRepo.GetAllBookings();
+		base.OnInitialized();
+	}
+
+	private async Task DeleteBooking(Booking bokning)
+	{
+		bool confirmed = await jsRuntime.InvokeAsync<bool>("confirm", $"Vill du verkligen ta bort den här bokningen {bokning.BookingId}?");
+
+		if (confirmed)
+		{
+			await bookingRepo.DeleteBooking(bokning);
+			bookingList.Remove(bokning);
+		}
+	}
+	private async Task UpdateBooking(Booking bokning)
+	{
+		await bookingRepo.UpdateBooking(bokning);
+		//Navigation.NavigateTo("/edit");
+	}
+
+}

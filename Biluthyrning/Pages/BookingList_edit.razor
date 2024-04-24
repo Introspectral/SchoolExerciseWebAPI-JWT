@@ -1,0 +1,45 @@
+﻿@page "/bokning/edit/{BookingId:int}"
+@using Biluthyrning.Interface
+@using Biluthyrning.Data
+@inject IBookingRepository bookingRepo
+@inject IUserRepository userRepo
+@inject IVehicleRepository vehiclRepo
+@inject NavigationManager Navigation
+@inject IJSRuntime jsRuntime
+
+
+    <EditForm Model="@bokning" class="form-control col-sm-5 p-5 text-white" OnValidSubmit="SaveChanges">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <label for="editBooking"><h3>ÄNDRA BOKNING</h3></label>
+    <br />
+
+    <label for="Start">Start tid:</label>
+    <InputDate @bind-Value="bokning.StartDate" ></InputDate>
+    <InputDate @bind-Value="bokning.EndDate"></InputDate>
+    <button type="submit" class="btn btn-primary"><span class="oi oi-plus" style="padding-right:10px"></span>Ändra bokning</button>
+</EditForm>
+
+
+@code {
+    [Parameter]
+    public int BookingId { get; set; }
+    public string title = "";
+    Booking bokning = new();
+    List<Vehicle> vehicles = new List<Vehicle>();
+    List<Booking> bookings = new List<Booking>();
+    List<Vehicle> bookingList = new List<Vehicle>();
+
+    protected override async Task OnInitializedAsync()
+
+    {
+        bokning = await bookingRepo.ReadBookingById(BookingId);
+        title = "Redigera bil";
+    }
+
+    private async Task SaveChanges()
+    {
+        await bookingRepo.UpdateBooking(bokning);
+        Navigation.NavigateTo("/adminbookinglist");
+    }
+}

@@ -1,0 +1,103 @@
+﻿@page "/users"
+@using Biluthyrning.Interface
+@using Biluthyrning.Data
+@inject IUserRepository userRepo
+@inject IJSRuntime jsRuntime
+
+<a href="/users/add" class="btn btn-primary"><span class="oi oi-plus" style="padding-right:10px"></span>Lägg till användare</a>
+<br/><br/>
+
+@* Lista alla admins*@
+<div class="form-control-light">
+
+<h4>Administratörer:</h4>
+</div>
+<table class="table table-striped table-light">
+	<thead>
+		<tr>
+			<th>#</th>
+			<th>Användarnamn</th>
+			<th>Lösenord</th>
+			<th>E-post</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var item in UserList.FindAll(x=>x.Admin==true))
+		{
+			<tr>
+				<td style="width: 15%;">@item.UserId</td>
+				<td style="width: 15%;">@item.UserName</td>
+				<td style="width: 15%;">
+					@for(int i=0; i < item.Password.Length; i++)
+					{
+						mask = mask + "*";
+					}
+					@mask</td>
+				<td style="width: 15%;">@item.Email</td>
+				<td>
+					<a class="btn btn-success" role="button" href="/users/edit/@item.UserId">Redigera</a>
+					<a class="btn btn-danger" role="button" @onclick="async ()=> await Delete(item)">Ta bort</a>
+				</td>
+			</tr>
+			mask = "";
+		}
+	</tbody>
+</table>
+
+@* Lista vanliga användare *@
+<div class="form-control-light">
+<h4>Vanliga användare:</h4>
+</div>
+<table class="table table-striped table-light">
+	<thead>
+		<tr>
+			<th>#</th>
+			<th>Användarnamn</th>
+			<th>Lösenord</th>
+			<th>E-post</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var item in UserList.FindAll(x => x.Admin==false))
+		{
+			<tr>
+				<td style="width: 15%;">@item.UserId</td>
+				<td style="width: 15%;">@item.UserName</td>
+				<td style="width: 15%;">@item.Password</td>
+				<td style="width: 15%;">@item.Email</td>
+				<td>
+					<a class="btn btn-success" role="button" href="/users/edit/@item.UserId">Redigera</a>
+					<a class="btn btn-danger" role="button" @onclick="async ()=> await Delete(item)">Ta bort</a>
+				</td>
+			</tr>
+		}
+	</tbody>
+</table>
+
+
+@code {
+	[Parameter]
+	public int UserId { get; set; }
+	List<User> UserList = new List<User>();
+
+	string mask = "";
+
+	protected override async Task OnInitializedAsync()
+	{
+		UserList = await userRepo.GetAllUsers();
+		base.OnInitialized();
+	}
+
+	private async Task Delete(User user)
+	{
+		bool confirmed = await jsRuntime.InvokeAsync<bool>("confirm", $"Vill du verkligen ta bort användaren med eposten {user.Email}?");
+
+		if (confirmed)
+		{
+			await userRepo.DeleteUser(user);
+			UserList.Remove(user);
+		}
+	}
+}

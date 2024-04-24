@@ -1,0 +1,92 @@
+﻿@page "/users/add"
+@page "/users/edit/{userId:int}"
+
+@using Biluthyrning.Interface
+@using Biluthyrning.Data
+@inject IUserRepository userRepo
+@inject NavigationManager Navigation
+
+<PageTitle>@title</PageTitle>
+<EditForm Model="@user" OnValidSubmit="SaveChanges" class="form-control">
+	<DataAnnotationsValidator />
+	
+	
+	<div class="form-floating mb-3 row">
+		<div class="col-md-2">
+			<label for="floatingUsername" class="white-text">Användarnamn</label>
+		</div>
+		<div class="col-md-10 form">
+			<InputText @bind-Value="user.UserName" id="floatingUsername" placeholder="Username" />
+			<div class="m-6">
+				<ValidationMessage For="@(()=>user.UserName)" class="form-control" />
+			</div>
+		</div>
+	</div>
+
+
+	<div class="form-floating mb-3 row">
+		<div class="col-md-2">
+			<label for="floatingPassword"class= "white-text">Lösenord</label>
+		</div>
+		<div class="col-md-10">
+			<InputText @bind-Value="user.Password" id="floatingPassword" placeholder="FALSFLAFSL" />
+			<div class="m-6">
+				<ValidationMessage For="@(()=>user.Password)" class="form-control" />
+			</div>
+		</div>
+	</div>
+
+	<div class="form-floating mb-3 row">
+		<div class="col-md-2">
+			<label for="floatingEmail" class="white-text">E-mail</label>
+		</div>
+		<div class="col-md-10">
+			<InputText @bind-Value="user.Email" id="floatingEmail" placeholder="Email" />
+			<div class="m-6">
+				<ValidationMessage For="@(()=>user.Email)" class="form-control" />
+			</div>
+		</div>
+	</div>
+
+
+
+	<div class="form-check form-switch">
+
+		<InputCheckbox @bind-Value="user.Admin" class="form-check-input" role="switch" id="adminCheck" />
+		<label class="form-check-label text-white" for="adminCheck">Administratör</label>
+		<ValidationMessage For="@(()=>user.Admin)" />
+	</div>
+
+	<div>
+		<button type="submit" class="btn btn-primary">Spara användare</button>
+	</div>
+
+</EditForm>
+
+@code {
+	[Parameter]
+	public int UserId { get; set; }
+	public string title = "";
+	User user = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (UserId > 0)
+		{
+			user = await userRepo.GetById(UserId);
+			title = "Redigera användare";
+		}
+		else
+		{
+			title = "Skapa ny användare";
+		}
+
+		base.OnInitialized();
+	}
+
+	private async Task SaveChanges()
+	{
+		await userRepo.UpdateUser(user);
+		Navigation.NavigateTo("/admin");
+	}
+}

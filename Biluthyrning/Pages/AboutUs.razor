@@ -1,0 +1,119 @@
+﻿@page "/omoss/add"
+@inject IJSRuntime JSRuntime
+
+<div class="container-fluid mt-3">
+    <div class="row">
+        <div class="col-sm-5 p-5 text-black form-control-light">
+
+            <h3>VÄLKOMNA!</h3>
+            <br />
+            <p>Välkommen till Ride-Right Rentals AB, en familjeägd biluthyrning som drivs av fyra syskon: Elisabeth, Nina, Robert och Johan. Vi är stolta över att erbjuda högkvalitativa hyrbilar till konkurrenskraftiga priser för både korta och långa resor.</p>
+            <p>Beläget bredvid Kebabnekajse i Umeå, är vår biluthyrningsaffär lättillgänglig och bekväm för dig som vill hyra en bil för att utforska området eller för affärsresor. Vi har ett brett utbud av fordon, inklusive kompakta bilar, familjebilar, SUV:ar och minibussar som passar för alla dina behov. </p>
+
+            <br />
+            <p>
+                Vi på Ride-Right Rentals AB strävar efter att erbjuda våra kunder en bekväm och problemfri hyresupplevelse. Vår vänliga och kunniga personal finns alltid till hands för att hjälpa dig att välja rätt fordon och svara på alla dina frågor.
+                <br />
+                Oavsett om du vill hyra en bil för en dag, en vecka eller längre tid, är Ride-Right Rentals AB det rätta valet för dig. Tack för att du väljer oss för din biluthyrning i Umeå!
+            </p>
+        </div>
+        <br />
+            
+        <div class="col-sm-5 p-5 text-white form-control-light" div style="background-color: #5b7d99">
+            <form id="form" name="form" method="post" action="" onsubmit="@HandleSubmit">
+                <h3>KONTAKTFORMULÄR</h3>
+
+                <label for="fnamn">Förnamn:</label>
+                <br>
+                <input type="text" name="fnamn" id="fnamn" @bind="firstName" />
+                <br>
+                <label for="enamn">Efternamn:</label>
+                <br>
+                <input type="text" name="enamn" id="enamn" @bind="lastName" />
+                <br>
+                <label for="">E-postadress:</label>
+                <br>
+                <input type="text" name="epost" id="epost" @bind="email" />
+                <br>
+                <label for="meddelande">Meddelande:</label>
+                <br>
+                <textarea name="meddelande" id="meddelande" cols="40" rows="7" @bind="message"></textarea>
+                <br>
+                <label for="skicka"></label>
+                <button type="submit" class="btn btn-primary"><span class="oi oi-envelope-closed " style="padding-right:10px"></span>Skicka meddelandet</button>
+            </form>
+             </div>
+
+            @code {
+                private string? firstName;
+                private string? lastName;
+                private string? email;
+                private string? message;
+
+                private async Task HandleSubmit()
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "Your message has been sent!");
+                    ClearInputs();
+                }
+
+                private void ClearInputs()
+                {
+                    firstName = "";
+                    lastName = "";
+                    email = "";
+                    message = "";
+                }
+            }
+       
+    </div>
+</div>
+<br />
+<br />
+
+<div class="container-fluid mt-3">
+    <div class="row form-control-light">
+        <h3>
+            Möt oss som jobbar här:
+        </h3>
+    </div>
+    <div class="row form-control-light">
+        <div class="col-sm-3 p-3 text-black ">
+            <img src="Images/image1.png" />
+            <h4>Elisabeth Hällsten</h4>
+            <h5>VD</h5>
+            <p>Med många års erfarenhet inom biluthyrningsbranschen och en passion för att ge kunderna den bästa möjliga upplevelsen, strävar Elisabeth alltid efter att förbättra och utveckla företaget. Hon är dedikerad till att erbjuda högkvalitativa hyrbilar och utmärkt kundservice till alla som väljer att hyra en bil från Ride-Right Rentals AB.</p>
+        </div>
+
+        <div class="col-sm-3 p-3  text-black ">
+            <img src="Images/image2.png" />
+            <h4>Nina Olsén</h4>
+            <h5>Säljare</h5>
+            <p>Med ett stort intresse för att arbeta med människor och en passion för försäljning, är Nina en värdefull del av teamet. Hon har en djup förståelse för kundernas behov och arbetar hårt för att se till att varje kund får en personlig och professionell service. Med sin positiva inställning och sitt engagemang för att hjälpa kunderna att hitta den perfekta hyrbilen, är Nina en av de viktigaste delarna av företagets team.</p>
+            
+        </div>
+
+        <div class="col-sm-3 p-3  text-black ">
+            <img src="Images/image3.png" />
+            <h4>Robert Schoultz</h4>
+            <h5>Säljare</h5>
+            <p>Med sin erfarenhet inom försäljning och passion för att hjälpa kunderna, är Robert en viktig del av företagets team. Han har en djup förståelse för kundernas behov och arbetar hårt för att se till att varje kund får en personlig och professionell service. Med sin entusiasm och sitt engagemang för att uppnå de bästa resultaten, är Robert en ovärderlig del av Ride-Right Rentals AB:s försäljningsteam.</p>
+        </div>
+
+        <div class="col-sm-3 p-3  text-black ">
+            <img src="Images/image4.png" />
+            <h4>Johan Ekelöf</h4>
+            <h5>Ekonomi</h5>
+            <p> Johan är ansvarig för ekonomi och administration i företaget. Med sin starka bakgrund inom ekonomi och företagsadministration, ser Johan till att företagets ekonomi och verksamhet är i ordning. Han arbetar hårt för att säkerställa att företagets finansiella styrning är i linje med affärsplanen och strävar alltid efter att öka företagets lönsamhet. Med sin skicklighet och erfarenhet, är Johan en viktig del av Ride-Right Rentals AB:s ledningsteam.</p>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid p-5 text-black text-center">
+    <h3>Hitta till oss: </h3>
+    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d632.9228397581397!2d20.28292116237248!3d63.82535654972334!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x467c5ba4a264313b%3A0xad2bec1b2ff2dbb!2sKebabnekajse!5e1!3m2!1ssv!2sse!4v1678193627458!5m2!1ssv!2sse" width="700" height="480" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+</div>
+
+
+
+
+

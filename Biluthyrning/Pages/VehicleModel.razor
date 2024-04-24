@@ -1,0 +1,39 @@
+﻿@page "/vehiclemodel/add"
+@using Biluthyrning.Interface
+
+@inject IVehicleTypeRepository vehicleTypeRepo
+@inject NavigationManager Navigation
+
+<EditForm class="form-control text-white" Model="@vehicle" OnValidSubmit="@AddVehicleType">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <label for="vehiclemodel"><h3>Lägg till fordonskategori:</h3></label>
+    <p><InputText id="vehiclemodel" @bind-Value="vehicle.vehicleType" />
+    <br />
+    <button type="submit" class="btn btn-primary"><span class="oi oi-plus" style="padding-right:10px"></span>Lägg till fordonskategori</button></P>
+</EditForm>
+<br />
+<h2>@Message</h2>
+
+@code {
+    private string Message = "";
+    VehicleType vehicle = new VehicleType();
+
+    protected override void OnInitialized()
+    {
+        //När sidan laddar
+    }
+
+    private async Task AddVehicleType()
+    {
+        if (await vehicleTypeRepo.CreateVehicleType(vehicle))
+        {
+            Message = "Fordonstyp tillagd!";
+        }
+        else
+        {
+            Message = "Något gick snett!";
+        }
+        //Navigation.NavigateTo("/");
+    }
+}

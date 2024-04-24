@@ -1,0 +1,60 @@
+﻿<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Ride-Right Rentals AB</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+@*Gamla stilen*@
+@*<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/bokafordon/add">
+                <span aria-hidden="true"></span> Boka Fordon
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/omoss/add">
+                <span  aria-hidden="true"></span> Om oss
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/admin">
+                <span aria-hidden="true"></span> Admin
+            </NavLink>
+            </div>
+    </nav>
+    </div>*@
+
+<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <a class="btn btn-primary text-white mb-2" href="/bokafordon/add">
+                <span aria-hidden="true"></span> Boka fordon
+            </a>
+        </div>
+        <div class="nav-item px-3">
+            <a class="btn btn-primary text-white mb-2" href="/omoss/add">
+                <span aria-hidden="true"></span> Om oss
+            </a>
+        </div>
+        <div class="nav-item px-3">
+        <a class="btn btn-primary text-white mb-2" href="/admin">
+            <span aria-hidden="true"></span> Admin
+        </a>
+        </div>
+    </nav>
+</div>
+
+
+
+@code {
+    private bool collapseNavMenu = true;
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

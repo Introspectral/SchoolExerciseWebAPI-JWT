@@ -1,0 +1,57 @@
+﻿
+@page "/vehicle/add"
+@using Biluthyrning.Interface
+@inject IJSRuntime JS
+@inject IVehicleRepository vehicleRepo
+@inject IVehicleTypeRepository vehicleTypeRepo
+@inject NavigationManager Navigation
+
+
+
+<EditForm class="form-control text-white" Model="@vehicle" OnValidSubmit="@AddVehicles">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <label for="addvehicles"><h3>Lägg till fordon:</h3></label>
+    <br />
+    <input type="text" value="Märke" @oninput="@((ChangeEventArgs e) => fordon.Brand = e.Value.ToString())" />
+    <br /> 
+    <br />
+    <input type="text" value="Modell" @oninput="@((ChangeEventArgs e) => fordon.Model = e.Value.ToString())" />
+    <br />
+    <br />
+    <input type="text" value="Färg" @oninput="@((ChangeEventArgs e) => fordon.Color = e.Value.ToString())" />
+    <br />
+    <br />
+    <label for="vehicletype">Välj fordonstyp:</label>
+    <select @bind="fordon.VehicleTypeId">
+        @foreach (var vt in vehicleTypes)
+        {
+            <option value="@vt.VehicleTypeId">@vt.vehicleType</option>
+        }
+    </select>
+    <br />
+    <button type="submit" class="btn btn-primary"><span class="oi oi-plus" style="padding-right:10px" ></span>Lägg till fordon</button>
+
+</EditForm>
+<br />
+
+@code {
+    private string Message = "";
+    List<Vehicle> vehicle = new List<Vehicle>();
+    List<VehicleType> vehicleTypes = new List<VehicleType>();
+    VehicleType _vehicleType = new VehicleType();
+    Vehicle fordon = new Vehicle();
+
+    protected override void OnInitialized()
+    {
+        vehicle = vehicleRepo.GetAll();
+        vehicleTypes = vehicleTypeRepo.GetAll();       
+    }
+
+    private async Task AddVehicles()
+    {
+        await vehicleRepo.CreateVehicle(fordon);
+        await JS.InvokeAsync<object>("alert", $"{fordon.Brand} {fordon.Model} {fordon.Color} created successfully!");
+        Navigation.NavigateTo("/");
+    }
+}

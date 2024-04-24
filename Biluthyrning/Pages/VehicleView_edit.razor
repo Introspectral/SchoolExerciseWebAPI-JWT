@@ -1,0 +1,64 @@
+﻿@page "/vehicle/edit/{VehicleId:int}"
+
+@using Biluthyrning.Interface
+@using Biluthyrning.Data
+@inject IVehicleRepository vehicleRepo
+@inject IVehicleTypeRepository vehicleTypeRepo
+@inject NavigationManager Navigation
+
+
+    <EditForm Model="@vehicle" class="form-control col-sm-5 p-5 text-white" OnValidSubmit="SaveChanges">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <label for="editVehicles"><h3>ÄNDRA FORDON</h3></label>
+    <br />
+
+    <label for="Märke">Märke:</label>
+    <InputText @bind-Value="vehicle.Brand" 
+    input type="text" class="form-control bg-white" name="Märke" @oninput="@((ChangeEventArgs e) => vehicle.Brand = e.Value.ToString())" />
+    <br />
+    <label for="Modell">Modell:</label>
+    <InputText @bind-Value="vehicle.Model" 
+    input type="text" class="form-control bg-white" name="Modell" @oninput="@((ChangeEventArgs e) => vehicle.Model = e.Value.ToString())" />
+    <br />
+    <label for="Färg">Färg:</label>
+    <InputText @bind-Value="vehicle.Color" 
+    input type="text" class="form-control bg-white" name="Färg" @oninput="@((ChangeEventArgs e) => vehicle.Color = e.Value.ToString())" />
+    <br />
+
+
+    <label for="vehicletype">Välj fordonstyp:</label>
+    <select class="form-control bg-white" @bind="vehicle.VehicleTypeId">
+        @foreach (var vt in vehicleTypes)
+        {
+            <option value="@vt.VehicleTypeId">@vt.vehicleType</option>
+        }
+    </select>
+    <br>
+    <button type="submit" class="btn btn-primary"><span class="oi oi-plus" style="padding-right:10px"></span>Ändra fordon</button>
+</EditForm>
+
+
+@code {
+    [Parameter]
+    public int VehicleId { get; set; }
+    public string title = "";
+    Vehicle vehicle = new();
+    List<VehicleType> vehicleTypes = new List<VehicleType>();
+
+
+
+    protected override void OnInitialized()
+
+    {
+        vehicle = vehicleRepo.GetVehicleById(VehicleId);
+        title = "Redigera bil";
+        vehicleTypes = vehicleTypeRepo.GetAll();
+    }
+
+    private async Task SaveChanges()
+    {
+        await vehicleRepo.UpdateVehicle(vehicle);
+        Navigation.NavigateTo("/admin");
+    }
+ }
